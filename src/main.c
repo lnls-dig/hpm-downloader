@@ -22,6 +22,30 @@ static char *getExt (const char *fspec) {
     return e;
 }
 
+void print_usage (void) {
+    fprintf (stderr, "HPMDownloader\n");
+    fprintf (stderr, "Formats a binary/hex file into the HPM format and sends using IPMI to the target MCH\n");
+    fprintf (stderr,
+	     "  -h  --help                       Display this usage information.\n"
+	     "  -c  --component                  Select the target component:\n"
+	     "                                       [0]-Bootloader [1]-IPMC [2]-Payload\n"
+	     "  -o  --offset                     Offset address\n"
+	     "  -d  --header                     Bytes to change in header\n"
+	     "  -n  --iana                       IANA Manufacturer Code\n"
+	     "  -i  --id                         Product ID\n"
+	     "  --early_major                    Earliest compatible major version\n"
+	     "  --early_minor                    Earliest compatible minor version\n"
+	     "  -j  --new_major                  New major version\n"
+	     "  -m  --new_minor                  New minor version\n"
+	     "  -p  --ip                         MCH IP Address\n"
+	     "  -u  --username                   MCH Username\n"
+	     "  -w  --password                   MCH Password\n"
+	     "  -s  --slot                       Slots to be updated (separated by comma):\n"
+	     "                                       [1 - 12], [all]\n"
+	);
+    exit(EXIT_FAILURE);
+}
+
 int main(int argc,char **argv) {
 
 /** User specific information */
@@ -94,10 +118,6 @@ int main(int argc,char **argv) {
 
     while ((ch = getopt_long_only(argc, argv, shortopt , long_options, NULL)) != -1) {
         switch (ch) {
-	case 'h':
-	    //print_usage();
-	    break;
-
 	case 'c':
 	    component = strtol(optarg, &endptr, 0);
 	    break;
@@ -206,6 +226,9 @@ int main(int argc,char **argv) {
 	    fprintf(stderr, "Bad option\n");
 	    break;
 	}
+        case 'h':
+            print_usage();
+            break;
     }
 
     if (optind == argc) {
