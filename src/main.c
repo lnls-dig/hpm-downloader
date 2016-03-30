@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <getopt.h>
 #include <mtca.h>
 
 #include <hpmParser.h>
@@ -19,165 +20,6 @@ static char *getExt (const char *fspec) {
     if (e == NULL)
         e = ""; // fast method, could also use &(fspec[strlen(fspec)]).
     return e;
-}
-
-void get_information(unsigned char *iana, unsigned char *product_id, unsigned char *earliest_major, unsigned char *earliest_min, unsigned char *new_major, unsigned char *new_minor, unsigned char *ip, unsigned char *username, unsigned char *password, unsigned char *slots, unsigned int *bootloader_offset, unsigned int *bootloader_header, unsigned int *component) {
-
-    unsigned char iana_ascii[25], prodid_ascii[25], earliest_maj_ascii[25], earliest_min_ascii[25], new_maj_ascii[25], new_min_ascii[25];
-    unsigned int iana_int, prodid_int, earliest_maj_int, earliest_min_int, new_maj_int, new_min_int;
-    unsigned char slot_inp[128];
-    unsigned int uc, comp;
-
-    char *token;
-
-    printf("\n  MMC Information \n");
-    printf("*******************\n");
-
-    printf("Component ([0] - Bootloader, [1] IPMC, [2] FPGA): ");
-    fflush(stdout);
-    scanf("%d",component);
-
-    if (*component == 0 || *component == 1) {
-        /** uC version */
-        do{
-            printf("Microcontroller version ([0] 8 bits / [1] 32 bits): ");
-            scanf("%u",&uc);
-            if(uc == 0){
-                *bootloader_offset = 0;
-                *bootloader_header = 0;
-            }else if(uc == 1){
-                *bootloader_offset = UC32BIT_BOOTLOADER_OFFSET;
-                *bootloader_header = UC32BIT_HEADER_TO_REPLACE_CNT;
-            }else{
-                printf("{Error} Wrong parameter, shall be 0 or 1 \n");
-            }
-        }while(uc != 0 && uc != 1);
-    } else {
-        *bootloader_offset = 0;
-        *bootloader_header = 0;
-    }
-
-    /** IANA */
-    printf("IANA Manufacturer ID: ");
-    fflush(stdout);
-    scanf("%s",iana_ascii);
-
-    if(strstr(iana_ascii,"x")) {
-        sscanf(iana_ascii, "%x",&iana_int);
-    } else {
-        sscanf(iana_ascii, "%d",&iana_int);
-    }
-
-    iana[0] = (iana_int & 0x00FF0000) >> 16;
-    iana[1] = (iana_int & 0x0000FF00) >> 8;
-    iana[2] = (iana_int & 0x000000FF);
-
-    /** Product ID */
-    printf("Product ID: ");
-    fflush(stdout);
-    scanf("%s",prodid_ascii);
-
-    if(strstr(prodid_ascii,"x")){
-        sscanf(prodid_ascii, "%x", &prodid_int);
-    }else{
-        sscanf(prodid_ascii, "%d", &prodid_int);
-    }
-
-    product_id[0] = (prodid_int & 0x0000FF00) >> 8;
-    product_id[1] = (prodid_int & 0x000000FF);
-
-    /** Earlied Major revision */
-    printf("Earliest major firmware rev. compatible : ");
-    fflush(stdout);
-    scanf("%s",earliest_maj_ascii);
-
-    if(strstr(earliest_maj_ascii,"x")){
-        sscanf(earliest_maj_ascii, "%x", &earliest_maj_int);
-    }else{
-        sscanf(earliest_maj_ascii, "%d", &earliest_maj_int);
-    }
-
-    *earliest_major = (earliest_maj_int & 0x000000FF);
-
-    /** Earliest Minor revision */
-    printf("Earliest minor firmware rev. compatible : ");
-    fflush(stdout);
-    scanf("%s",earliest_min_ascii);
-
-    if(strstr(earliest_min_ascii,"x")){
-        sscanf(earliest_min_ascii, "%x", &earliest_min_int);
-    }else{
-        sscanf(earliest_min_ascii, "%d", &earliest_min_int);
-    }
-
-    *earliest_min = (earliest_min_int & 0x000000FF);
-
-    /** New major revision */
-    printf("New major firmware : ");
-    fflush(stdout);
-    scanf("%s",new_maj_ascii);
-
-    if(strstr(new_maj_ascii,"x")){
-        sscanf(new_maj_ascii, "%x", &new_maj_int);
-    }else{
-        sscanf(new_maj_ascii, "%d", &new_maj_int);
-    }
-
-    *new_major = (new_maj_int & 0x000000FF);
-
-    /** New minor revision */
-    printf("New minor firmware : ");
-    fflush(stdout);
-    scanf("%s",new_min_ascii);
-
-    if(strstr(new_min_ascii,"x")){
-        sscanf(new_min_ascii, "%x", &new_min_int);
-    }else{
-        sscanf(new_min_ascii, "%d", &new_min_int);
-    }
-
-    *new_minor = (new_min_int & 0x000000FF);
-
-    printf("\n  Download information  \n");
-    printf("************************\n");
-
-    /** MCH IP */
-    printf("MCH IP: ");
-    fflush(stdout);
-    scanf("%s",ip);
-
-    /** Username */
-    printf("Username: ");
-    fflush(stdout);
-    while (getchar()!='\n');    //Flush stdin
-    fgets(username,20,stdin);
-    username[strnlen(username, 16)-1] = 0x00;
-
-    /** Password */
-    printf("Password: ");
-    fflush(stdout);
-    fgets(password,20,stdin);
-    password[strnlen(password, 16)-1] = 0x00;
-
-    /** Slot to be updated */
-    printf("Slot(s) (should be separed by comma - all for all slots): ");
-    fflush(stdout);
-    scanf("%s",slot_inp);
-
-    if(!strcmp(slot_inp, "all")){
-        memset(slots, 1, 12);
-    }else{
-        token = strtok(slot_inp, ",");
-
-        while( token != NULL ){
-            slots[atoi(token)-1] = 1;
-            token = strtok(NULL, ",");
-        }
-    }
-
-    printf("\n");
-    printf("  Download firmware  \n");
-    printf("*********************\n");
 }
 
 int main(int argc,char **argv) {
@@ -216,15 +58,162 @@ int main(int argc,char **argv) {
     unsigned char *filename;
     unsigned int binsize;
 
-    if(argc < 2){
-        printf("\tUSAGE: ./hpmdowloader <.hex/.bin file> \n");
-        return -1;
+    unsigned char iana_ascii[25], prodid_ascii[25], earliest_maj_ascii[25], earliest_min_ascii[25], new_maj_ascii[25], new_min_ascii[25];
+    unsigned int iana_int, prodid_int, earliest_maj_int, earliest_min_int, new_maj_int, new_min_int;
+    unsigned char slot_inp[128];
+    unsigned int uc, comp;
+
+    char *token, ch, *endptr;
+    int c;
+
+    enum {
+	early_major,
+	early_minor
+    };
+
+    static struct option long_options[] =
+    {
+        {"help",                no_argument,         NULL, 'h'},
+        {"component",           required_argument,   NULL, 'c'},
+        {"offset",              required_argument,   NULL, 'o'},
+	{"header",              required_argument,   NULL, 'd'},
+	{"iana",                required_argument,   NULL, 'n'},
+	{"id",                  required_argument,   NULL, 'i'},
+	{"early_major",         required_argument,   NULL, early_major},
+	{"early_minor",         required_argument,   NULL, early_minor},
+	{"new_major",           required_argument,   NULL, 'j'},
+	{"new_minor",           required_argument,   NULL, 'm'},
+	{"ip",                  required_argument,   NULL, 'p'},
+	{"username",            required_argument,   NULL, 'u'},
+	{"password",            required_argument,   NULL, 'w'},
+	{"slot",                required_argument,   NULL, 's'},
+	{0,0,0,0}
+    };
+
+    const char* shortopt = "hc:o:d:n:i:j:m:s:p:u:w:";
+
+    while ((ch = getopt_long_only(argc, argv, shortopt , long_options, NULL)) != -1) {
+        switch (ch) {
+	case 'h':
+	    //print_usage();
+	    break;
+
+	case 'c':
+	    component = strtol(optarg, &endptr, 0);
+	    break;
+
+	case 'o':
+	    if(strstr(optarg,"x")){
+		sscanf(optarg, "%x", &ucOffset);
+	    } else {
+		sscanf(optarg, "%d", &ucOffset);
+	    }
+	    break;
+
+	case 'd':
+	    if(strstr(optarg,"x")){
+		sscanf(optarg, "%x", &cntHeaderToReplace);
+	    } else {
+		sscanf(optarg, "%d", &cntHeaderToReplace);
+	    }
+	    break;
+
+	case 'n':
+	    if(strstr(optarg,"x")) {
+		sscanf(optarg, "%x",&iana_int);
+	    } else {
+		sscanf(optarg, "%d",&iana_int);
+	    }
+
+	    iana[0] = (iana_int & 0x00FF0000) >> 16;
+	    iana[1] = (iana_int & 0x0000FF00) >> 8;
+	    iana[2] = (iana_int & 0x000000FF);
+	    break;
+
+	case 'i':
+	    if(strstr(optarg,"x")) {
+		sscanf(optarg, "%x",&prodid_int);
+	    } else {
+		sscanf(optarg, "%d",&prodid_int);
+	    }
+
+	    product_id[0] = (prodid_int & 0x0000FF00) >> 8;
+	    product_id[1] = (prodid_int & 0x000000FF);
+	    break;
+
+	case early_major:
+	    if(strstr(optarg,"x")){
+		sscanf(optarg, "%x", &earliest_maj_int);
+	    } else {
+		sscanf(optarg, "%d", &earliest_maj_int);
+	    }
+
+	    earliest_major = (earliest_maj_int & 0x000000FF);
+	    break;
+
+	case early_minor:
+	    if(strstr(optarg,"x")){
+		sscanf(optarg, "%x", &earliest_min_int);
+	    } else {
+		sscanf(optarg, "%d", &earliest_min_int);
+	    }
+	    earliest_min = (earliest_min_int & 0x000000FF);
+	    break;
+
+	case 'j':
+	    if(strstr(optarg,"x")){
+		sscanf(optarg, "%x", &new_maj_int);
+	    } else {
+		sscanf(optarg, "%d", &new_maj_int);
+	    }
+	    new_major = (new_maj_int & 0x000000FF);
+	    break;
+
+	case 'm':
+	    if(strstr(optarg,"x")){
+		sscanf(optarg, "%x", &new_min_int);
+	    } else {
+		sscanf(optarg, "%d", &new_min_int);
+	    }
+	    new_minor = (new_min_int & 0x000000FF);
+	    break;
+
+	case 'p':
+	    strcpy(ip, optarg);
+	    break;
+
+	case 'u':
+	    strcpy(username, optarg);
+	    break;
+
+	case 'w':
+	    strcpy(password, optarg);
+	    break;
+
+	case 's':
+	    if(!strcmp(optarg, "all")){
+		memset(slots, 1, 12);
+	    } else {
+		token = strtok(optarg, ",");
+		while( token != NULL ) {
+		    slots[atoi(token)-1] = 1;
+		    token = strtok(NULL, ",");
+		}
+	    }
+	    break;
+
+	default:
+	    fprintf(stderr, "Bad option\n");
+	    break;
+	}
     }
 
-    /** Get user information */
-    get_information(iana, product_id, &earliest_major, &earliest_min, &new_major, &new_minor, ip, username, password, slots, &ucOffset, &cntHeaderToReplace, &component);
+    if (optind == argc) {
+	printf("No firmware found!\n");
+	return -1;
+    }
 
-    filename = (argv[1]);
+    filename = (argv[optind]);
 
     if (strcmp(getExt(filename),".bin") == 0) {
         printf("Binary File found: %s\n", filename );
