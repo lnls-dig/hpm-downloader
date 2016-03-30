@@ -26,23 +26,23 @@ void print_usage (void) {
     fprintf (stderr, "HPMDownloader\n");
     fprintf (stderr, "Formats a binary/hex file into the HPM format and sends using IPMI to the target MCH\n");
     fprintf (stderr,
-	     "  -h  --help                       Display this usage information.\n"
-	     "  -c  --component                  Select the target component:\n"
-	     "                                       [0]-Bootloader [1]-IPMC [2]-Payload\n"
-	     "  -o  --offset                     Offset address\n"
-	     "  -d  --header                     Bytes to change in header\n"
-	     "  -n  --iana                       IANA Manufacturer Code\n"
-	     "  -i  --id                         Product ID\n"
-	     "  --early_major                    Earliest compatible major version\n"
-	     "  --early_minor                    Earliest compatible minor version\n"
-	     "  -j  --new_major                  New major version\n"
-	     "  -m  --new_minor                  New minor version\n"
-	     "  -p  --ip                         MCH IP Address\n"
-	     "  -u  --username                   MCH Username\n"
-	     "  -w  --password                   MCH Password\n"
-	     "  -s  --slot                       Slots to be updated (separated by comma):\n"
-	     "                                       [1 - 12], [all]\n"
-	);
+             "  -h  --help                       Display this usage information.\n"
+             "  -c  --component                  Select the target component:\n"
+             "                                       [0]-Bootloader [1]-IPMC [2]-Payload\n"
+             "  -o  --offset                     Offset address\n"
+             "  -d  --header                     Bytes to change in header\n"
+             "  -n  --iana                       IANA Manufacturer Code\n"
+             "  -i  --id                         Product ID\n"
+             "  --early_major                    Earliest compatible major version\n"
+             "  --early_minor                    Earliest compatible minor version\n"
+             "  -j  --new_major                  New major version\n"
+             "  -m  --new_minor                  New minor version\n"
+             "  -p  --ip                         MCH IP Address\n"
+             "  -u  --username                   MCH Username\n"
+             "  -w  --password                   MCH Password\n"
+             "  -s  --slot                       Slots to be updated (separated by comma):\n"
+             "                                       [1 - 12], [all]\n"
+        );
     exit(EXIT_FAILURE);
 }
 
@@ -91,149 +91,150 @@ int main(int argc,char **argv) {
     int c;
 
     enum {
-	early_major,
-	early_minor
+        early_major,
+        early_minor
     };
 
     static struct option long_options[] =
-    {
-        {"help",                no_argument,         NULL, 'h'},
-        {"component",           required_argument,   NULL, 'c'},
-        {"offset",              required_argument,   NULL, 'o'},
-	{"header",              required_argument,   NULL, 'd'},
-	{"iana",                required_argument,   NULL, 'n'},
-	{"id",                  required_argument,   NULL, 'i'},
-	{"early_major",         required_argument,   NULL, early_major},
-	{"early_minor",         required_argument,   NULL, early_minor},
-	{"new_major",           required_argument,   NULL, 'j'},
-	{"new_minor",           required_argument,   NULL, 'm'},
-	{"ip",                  required_argument,   NULL, 'p'},
-	{"username",            required_argument,   NULL, 'u'},
-	{"password",            required_argument,   NULL, 'w'},
-	{"slot",                required_argument,   NULL, 's'},
-	{0,0,0,0}
-    };
+        {
+            {"help",                no_argument,         NULL, 'h'},
+            {"component",           required_argument,   NULL, 'c'},
+            {"offset",              required_argument,   NULL, 'o'},
+            {"header",              required_argument,   NULL, 'd'},
+            {"iana",                required_argument,   NULL, 'n'},
+            {"id",                  required_argument,   NULL, 'i'},
+            {"early_major",         required_argument,   NULL, early_major},
+            {"early_minor",         required_argument,   NULL, early_minor},
+            {"new_major",           required_argument,   NULL, 'j'},
+            {"new_minor",           required_argument,   NULL, 'm'},
+            {"ip",                  required_argument,   NULL, 'p'},
+            {"username",            required_argument,   NULL, 'u'},
+            {"password",            required_argument,   NULL, 'w'},
+            {"slot",                required_argument,   NULL, 's'},
+            {0,0,0,0}
+        };
 
     const char* shortopt = "hc:o:d:n:i:j:m:s:p:u:w:";
 
     while ((ch = getopt_long_only(argc, argv, shortopt , long_options, NULL)) != -1) {
         switch (ch) {
-	case 'c':
-	    component = strtol(optarg, &endptr, 0);
-	    break;
-
-	case 'o':
-	    if(strstr(optarg,"x")){
-		sscanf(optarg, "%x", &ucOffset);
-	    } else {
-		sscanf(optarg, "%d", &ucOffset);
-	    }
-	    break;
-
-	case 'd':
-	    if(strstr(optarg,"x")){
-		sscanf(optarg, "%x", &cntHeaderToReplace);
-	    } else {
-		sscanf(optarg, "%d", &cntHeaderToReplace);
-	    }
-	    break;
-
-	case 'n':
-	    if(strstr(optarg,"x")) {
-		sscanf(optarg, "%x",&iana_int);
-	    } else {
-		sscanf(optarg, "%d",&iana_int);
-	    }
-
-	    iana[0] = (iana_int & 0x00FF0000) >> 16;
-	    iana[1] = (iana_int & 0x0000FF00) >> 8;
-	    iana[2] = (iana_int & 0x000000FF);
-	    break;
-
-	case 'i':
-	    if(strstr(optarg,"x")) {
-		sscanf(optarg, "%x",&prodid_int);
-	    } else {
-		sscanf(optarg, "%d",&prodid_int);
-	    }
-
-	    product_id[0] = (prodid_int & 0x0000FF00) >> 8;
-	    product_id[1] = (prodid_int & 0x000000FF);
-	    break;
-
-	case early_major:
-	    if(strstr(optarg,"x")){
-		sscanf(optarg, "%x", &earliest_maj_int);
-	    } else {
-		sscanf(optarg, "%d", &earliest_maj_int);
-	    }
-
-	    earliest_major = (earliest_maj_int & 0x000000FF);
-	    break;
-
-	case early_minor:
-	    if(strstr(optarg,"x")){
-		sscanf(optarg, "%x", &earliest_min_int);
-	    } else {
-		sscanf(optarg, "%d", &earliest_min_int);
-	    }
-	    earliest_min = (earliest_min_int & 0x000000FF);
-	    break;
-
-	case 'j':
-	    if(strstr(optarg,"x")){
-		sscanf(optarg, "%x", &new_maj_int);
-	    } else {
-		sscanf(optarg, "%d", &new_maj_int);
-	    }
-	    new_major = (new_maj_int & 0x000000FF);
-	    break;
-
-	case 'm':
-	    if(strstr(optarg,"x")){
-		sscanf(optarg, "%x", &new_min_int);
-	    } else {
-		sscanf(optarg, "%d", &new_min_int);
-	    }
-	    new_minor = (new_min_int & 0x000000FF);
-	    break;
-
-	case 'p':
-	    strcpy(ip, optarg);
-	    break;
-
-	case 'u':
-	    strcpy(username, optarg);
-	    break;
-
-	case 'w':
-	    strcpy(password, optarg);
-	    break;
-
-	case 's':
-	    if(!strcmp(optarg, "all")){
-		memset(slots, 1, 12);
-	    } else {
-		token = strtok(optarg, ",");
-		while( token != NULL ) {
-		    slots[atoi(token)-1] = 1;
-		    token = strtok(NULL, ",");
-		}
-	    }
-	    break;
-
-	default:
-	    fprintf(stderr, "Bad option\n");
-	    break;
-	}
         case 'h':
             print_usage();
             break;
+
+        case 'c':
+            component = strtol(optarg, &endptr, 0);
+            break;
+
+        case 'o':
+            if(strstr(optarg,"x")){
+                sscanf(optarg, "%x", &ucOffset);
+            } else {
+                sscanf(optarg, "%d", &ucOffset);
+            }
+            break;
+
+        case 'd':
+            if(strstr(optarg,"x")){
+                sscanf(optarg, "%x", &cntHeaderToReplace);
+            } else {
+                sscanf(optarg, "%d", &cntHeaderToReplace);
+            }
+            break;
+
+        case 'n':
+            if(strstr(optarg,"x")) {
+                sscanf(optarg, "%x",&iana_int);
+            } else {
+                sscanf(optarg, "%d",&iana_int);
+            }
+
+            iana[0] = (iana_int & 0x00FF0000) >> 16;
+            iana[1] = (iana_int & 0x0000FF00) >> 8;
+            iana[2] = (iana_int & 0x000000FF);
+            break;
+
+        case 'i':
+            if(strstr(optarg,"x")) {
+                sscanf(optarg, "%x",&prodid_int);
+            } else {
+                sscanf(optarg, "%d",&prodid_int);
+            }
+
+            product_id[0] = (prodid_int & 0x0000FF00) >> 8;
+            product_id[1] = (prodid_int & 0x000000FF);
+            break;
+
+        case early_major:
+            if(strstr(optarg,"x")){
+                sscanf(optarg, "%x", &earliest_maj_int);
+            } else {
+                sscanf(optarg, "%d", &earliest_maj_int);
+            }
+
+            earliest_major = (earliest_maj_int & 0x000000FF);
+            break;
+
+        case early_minor:
+            if(strstr(optarg,"x")){
+                sscanf(optarg, "%x", &earliest_min_int);
+            } else {
+                sscanf(optarg, "%d", &earliest_min_int);
+            }
+            earliest_min = (earliest_min_int & 0x000000FF);
+            break;
+
+        case 'j':
+            if(strstr(optarg,"x")){
+                sscanf(optarg, "%x", &new_maj_int);
+            } else {
+                sscanf(optarg, "%d", &new_maj_int);
+            }
+            new_major = (new_maj_int & 0x000000FF);
+            break;
+
+        case 'm':
+            if(strstr(optarg,"x")){
+                sscanf(optarg, "%x", &new_min_int);
+            } else {
+                sscanf(optarg, "%d", &new_min_int);
+            }
+            new_minor = (new_min_int & 0x000000FF);
+            break;
+
+        case 'p':
+            strcpy(ip, optarg);
+            break;
+
+        case 'u':
+            strcpy(username, optarg);
+            break;
+
+        case 'w':
+            strcpy(password, optarg);
+            break;
+
+        case 's':
+            if(!strcmp(optarg, "all")){
+                memset(slots, 1, 12);
+            } else {
+                token = strtok(optarg, ",");
+                while( token != NULL ) {
+                    slots[atoi(token)-1] = 1;
+                    token = strtok(NULL, ",");
+                }
+            }
+            break;
+
+        default:
+            fprintf(stderr, "Bad option\n");
+            break;
+        }
     }
 
     if (optind == argc) {
-	printf("No firmware found!\n");
-	return -1;
+        printf("No firmware found!\n");
+        return -1;
     }
 
     filename = (argv[optind]);
@@ -276,8 +277,8 @@ int main(int argc,char **argv) {
     /** Write the image */
     for(i=0; i<12; i++) {
         if(slots[i]) {
-	    update_results[i] = hpmdownload(hpmImg, hpmImgSize, ip, username, password, (i+1), component);
-	}
+            update_results[i] = hpmdownload(hpmImg, hpmImgSize, ip, username, password, (i+1), component);
+        }
     }
 
     /** Print results */
