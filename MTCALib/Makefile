@@ -23,7 +23,7 @@ all: dirs $(MTCA_OBJ) $(MTCA_LIB)
 dll: dirs $(MTCA_OBJ) $(MTCA_DLL)
 
 dirs:
-	@mkdir -p $(OBJ_DIR) $(BIN_DIR)
+	@mkdir -p $(OBJ_DIR) $(BIN_DIR) $(LIB_DIR)
 
 $(MTCA_OBJ): $(OBJ_DIR)%.o : $(SRC_DIR)%.c
 	@echo "Construction of $@ from $<"
