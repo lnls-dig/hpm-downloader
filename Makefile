@@ -34,7 +34,7 @@ $(MTCALIB_LIB) :
 
 $(HPMDOWNLOADER_OBJ): $(OBJ_DIR)%.o : $(SRC_DIR)%.c
 	@echo "Construction of $@ from $<"
-	$(CC) $(CFLAGS) -I $(INC_DIR) -I $(MTCA_INC) $< -o $@
+	$(CC) -m64 $(CFLAGS) -I $(INC_DIR) -I $(MTCA_INC) $< -o $@
 	@echo ""
 
 $(HPMDOWNLOADER_BIN) : $(HPMDOWNLOADER_OBJ)

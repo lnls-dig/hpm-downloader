@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-c
+CFLAGS=-c -m64
 LDFLAGS=
 
 #Directories
