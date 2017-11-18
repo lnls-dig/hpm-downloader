@@ -269,11 +269,12 @@ int main(int argc,char **argv) {
     free(binary);
     if(hpmImg == NULL)  return -2;
 
-    /*
-      hpm_fd = fopen("img.hpm", "wb");
-      fwrite(hpmImg, hpmImgSize, 1, hpm_fd);
-      fclose(hpm_fd);
-    */
+#ifdef HPM_EXPORT
+    /* Export HPM image to file */
+    hpm_fd = fopen("img.hpm", "wb");
+    fwrite(hpmImg, hpmImgSize, 1, hpm_fd);
+    fclose(hpm_fd);
+#endif
 
     /** Download the image */
     for(i=0; i<12; i++) {
