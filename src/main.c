@@ -42,6 +42,7 @@ void print_usage (void) {
              "  -w  --password                   MCH Password\n"
              "  -s  --slot                       Slots to be updated (separated by comma):\n"
              "                                       [1 - 12], [all]\n"
+             "  file                             Filename (including relative or absolute path)\n"
         );
     exit(EXIT_FAILURE);
 }
@@ -274,9 +275,9 @@ int main(int argc,char **argv) {
       fclose(hpm_fd);
     */
 
-    /** Write the image */
+    /** Download the image */
     for(i=0; i<12; i++) {
-        if(slots[i]) {
+        if( slots[i] ) {
             update_results[i] = hpmdownload(hpmImg, hpmImgSize, ip, username, password, (i+1), component);
         }
     }

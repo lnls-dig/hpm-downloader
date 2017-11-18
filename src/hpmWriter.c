@@ -9,7 +9,7 @@ int hpmdownload(unsigned char *byte, unsigned int filesize, unsigned char *ip, u
 {
     unsigned char i;
 
-    printf("[INFO] \t {main} \t\t\t Programming MMC slot %d \n",slot);
+    printf("\n[INFO] \t {main} \t\t\t Programming MMC slot %d \n",slot);
 
     switch(get_img_information(byte, filesize)){
     case 0xFF:  printf("[ERROR]  {get_img_information} \t\t HPM image header failed \n");       return -1;
@@ -51,11 +51,10 @@ int hpmdownload(unsigned char *byte, unsigned int filesize, unsigned char *ip, u
             }
         }
     }
-
     return 0x00;
 }
 
-unsigned char get_img_information(unsigned char *byte, unsigned int binsize){
+unsigned char get_img_information(unsigned char *byte, unsigned int binsize) {
 
     unsigned char i;
     unsigned char crc=0;
@@ -68,7 +67,7 @@ unsigned char get_img_information(unsigned char *byte, unsigned int binsize){
         byte[4] != 0x47 ||
         byte[5] != 0x46 ||
         byte[6] != 0x57 ||
-        byte[7] != 0x55)        return 0xFF;
+        byte[7] != 0x55) return 0xFF;
 
     //Check format version
     if(byte[8] != 0x00) return 0xFE;
@@ -77,8 +76,6 @@ unsigned char get_img_information(unsigned char *byte, unsigned int binsize){
     for(i=0; i<33; i++){
         crc -= byte[i];
     }
-
-    //printf("Checksum = 0x%02x (expected 0x%02x) \n", byte[34], crc);
 
     if(crc != byte[34]) return 0xFD;
 
@@ -108,8 +105,8 @@ unsigned char get_img_information(unsigned char *byte, unsigned int binsize){
     return get_action(byte, binsize);
 }
 
-unsigned char check_hpm_info(unsigned char *ip, unsigned char *username, unsigned char *password, unsigned char amc_slot_number){
-
+unsigned char check_hpm_info(unsigned char *ip, unsigned char *username, unsigned char *password, unsigned char amc_slot_number)
+{
     unsigned char len, i, offset;
 
     unsigned char data[25];
@@ -119,40 +116,41 @@ unsigned char check_hpm_info(unsigned char *ip, unsigned char *username, unsigne
                                               username,
                                               password,
                                               (0x70+2*amc_slot_number),                 //No target specified (Default: MCH)
-                                              0x82,                                                             //No transit addr specified (Default: 0)
-                                              7,                                                                        //No target channel specified (Default: 0)
+                                              0x82,                                     //No transit addr specified (Default: 0)
+                                              7,                                        //No target channel specified (Default: 0)
                                               0);
 
     rsp = send_ipmi_cmd(intf, 0x06, 0x01, NULL, 0);
-    if(rsp == NULL){
+    if(rsp == NULL) {
         intf->close(intf);
         return 0xFF;
-    }else{
-        if(rsp->ccode){
+    } else {
+        printf("[INFO] \t {GET_DEVICE_ID} \t\t Completion Code : 0x%02x \n", rsp->ccode);
+        if(rsp->ccode) {
             printf("[INFO] \t {GET_DEVICE_ID} \t\t Completion Code : 0x%02x \n", rsp->ccode);
             intf->close(intf);
             return 0xFE;
         }
 
         if(rsp->data_len != 11){
-	    intf->close(intf);
-	    return 0xFD;
-	}
+            intf->close(intf);
+            return 0xFD;
+        }
 
         if(rsp->data[9] != img_info.product_id[0] || rsp->data[10] != img_info.product_id[1]){
-	    intf->close(intf);
-	    return 0xFC;
-	}  //Check product ID
+            intf->close(intf);
+            return 0xFC;
+        }  //Check product ID
 
-	if(rsp->data[6] != img_info.manufacturer_id[0] || rsp->data[7] != img_info.manufacturer_id[1] || rsp->data[8] != img_info.manufacturer_id[2]) {
-	    intf->close(intf);
-	    return 0xFB;
-	}//Check Manufacturer ID
+        if(rsp->data[6] != img_info.manufacturer_id[0] || rsp->data[7] != img_info.manufacturer_id[1] || rsp->data[8] != img_info.manufacturer_id[2]) {
+            intf->close(intf);
+            return 0xFB;
+        }//Check Manufacturer ID
 
-	if(rsp->data[2] < img_info.earliest_compatibility_vers[0] || (rsp->data[2] == img_info.earliest_compatibility_vers[0] && rsp->data[3] < img_info.earliest_compatibility_vers[1])) {
-	    intf->close(intf);
-	    return 0xFA;
-	}//Check vers.
+        if(rsp->data[2] < img_info.earliest_compatibility_vers[0] || (rsp->data[2] == img_info.earliest_compatibility_vers[0] && rsp->data[3] < img_info.earliest_compatibility_vers[1])) {
+            intf->close(intf);
+            return 0xFA;
+        }//Check vers.
     }
 
     printf("[INFO] \t {check_hpm_info} \t\t version %d.%d will be replace by %d.%d \n", rsp->data[2], rsp->data[3], img_info.firware_rev[0], img_info.firware_rev[1]);
@@ -169,19 +167,19 @@ unsigned char check_hpm_info(unsigned char *ip, unsigned char *username, unsigne
         }
 
         if(rsp->data_len != 8){
-	    intf->close(intf);
-	    return 0xF8;
-	}
+            intf->close(intf);
+            return 0xF8;
+        }
 
         if(rsp->data[1] != 0x00){
-	    intf->close(intf);
-	    return 0xF7;
-	}//HPM.1 not supported
+            intf->close(intf);
+            return 0xF7;
+        }//HPM.1 not supported
 
-	if(rsp->data[2] & 0x01){
-	    intf->close(intf);
-	    return 0xF6;
-	}//Firmware upgrade is not desirable at this time
+        if(rsp->data[2] & 0x01){
+            intf->close(intf);
+            return 0xF6;
+        }//Firmware upgrade is not desirable at this time
 
         //img_info.image_capabilities
         //      Byte [2] : Manual roll-back capabilities
@@ -206,13 +204,13 @@ unsigned char check_hpm_info(unsigned char *ip, unsigned char *username, unsigne
         //                                      1b = Supported
 
         if((rsp->data[2] & 0x07) != (img_info.image_capabilities & 0x07)) {
-	    intf->close(intf);
-	    return 0xF5;
-	}//Capabilities are different between HPM image and MMC's information
+            intf->close(intf);
+            return 0xF5;
+        }//Capabilities are different between HPM image and MMC's information
         if((rsp->data[7] & img_info.components) !=  img_info.components) {
-	    intf->close(intf);
-	    return 0xF4;
-	}//Component(s) not present
+            intf->close(intf);
+            return 0xF4;
+        }//Component(s) not present
 
         img_info.upgrade_timeout = rsp->data[3]; //5 second per unit
     }
@@ -327,7 +325,7 @@ unsigned char hpm_upgrade(unsigned char *ip, unsigned char *username, unsigned c
     scan_ret = scan_upgrade_status(intf, img_info.inaccessibility_timeout);
 
     if( scan_ret != 0 ) {
-	return scan_ret;
+        return scan_ret;
     }
 
     //Upload firmware block
@@ -345,13 +343,13 @@ unsigned char hpm_upgrade(unsigned char *ip, unsigned char *username, unsigned c
         printf("\r[INFO] \t {Upgrade in progress} \t\t %d / %d ", offset, action->firmware_length);
         fflush(stdout);
 
-	scan_ret = 0xFF;
+        scan_ret = 0xFF;
 
         rsp = send_ipmi_cmd(intf, 0x2c, 0x32, data, i+2);
 
-	if (rsp->ccode != 0x00) {
-	    scan_upgrade_status(intf, img_info.inaccessibility_timeout);
-	}
+        if (rsp->ccode != 0x00) {
+            scan_upgrade_status(intf, img_info.inaccessibility_timeout);
+        }
     }
 
     printf("\n");
@@ -371,9 +369,9 @@ unsigned char hpm_upgrade(unsigned char *ip, unsigned char *username, unsigned c
     }
 
     if(rsp->ccode != 0x00 && rsp->ccode != 0x81){ //Ignore size error for now
-	printf("[INFO] \t {FINISH_FIRMWARE_UPLOAD} \t Completion Code : 0x%02x \n", rsp->ccode);
-	intf->close(intf);
-	return 0xF8;
+        printf("[INFO] \t {FINISH_FIRMWARE_UPLOAD} \t Completion Code : 0x%02x \n", rsp->ccode);
+        intf->close(intf);
+        return 0xF8;
     }
 
     /* Activate Firmware */
@@ -388,10 +386,10 @@ unsigned char hpm_upgrade(unsigned char *ip, unsigned char *username, unsigned c
     }
 
     if(rsp->ccode == 0x00) {
-	intf->close(intf);
-	return 0x00;
+        intf->close(intf);
+        return 0x00;
     } else if (rsp->ccode == 0xD5) {
-	printf("[INFO] \t {ACTIVATE_FIRMWARE_UPLOAD} \t The most recent firmware is already active \n");
+        printf("[INFO] \t {ACTIVATE_FIRMWARE_UPLOAD} \t The most recent firmware is already active \n");
     }
 
     intf->close(intf);
@@ -415,7 +413,7 @@ unsigned char scan_upgrade_status(ipmi_intf * intf, unsigned long max_timeout)
             if(rsp->ccode == 0x80 || rsp->ccode == 0xc3){
                 usleep(10000);
             } else if(rsp->ccode == 0x00) {
-		ccode = rsp->data[2];
+                ccode = rsp->data[2];
                 usleep(10000);
             } else {
                 usleep(10000);
@@ -424,5 +422,5 @@ unsigned char scan_upgrade_status(ipmi_intf * intf, unsigned long max_timeout)
         timeout++;
     }while((ccode != 0x00));
 
-	return 0x00;
+    return 0x00;
 }
