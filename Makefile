@@ -20,8 +20,8 @@ MTCALIB_LIB = MTCALib/lib/libmtca.a
 HPMDOWNLOADER_SRC= $(wildcard $(SRC_DIR)*.c)
 HPMDOWNLOADER_OBJ=$(HPMDOWNLOADER_SRC:$(SRC_DIR)%.c=$(OBJ_DIR)%.o)
 
-#Libraries
-HPMDOWNLOADER_BIN= hpmdownloader.exe
+#Binary
+HPMDOWNLOADER_BIN= hpmdownloader
 
 #Rules ------------------------------------------------------------------------
 all: dirs $(HPMDOWNLOADER_OBJ) $(MTCALIB_LIB) $(HPMDOWNLOADER_BIN)
