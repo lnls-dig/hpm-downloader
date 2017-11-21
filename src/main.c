@@ -31,15 +31,15 @@ void print_usage (void) {
              "                                       [0]-Bootloader [1]-IPMC [2]-Payload\n"
              "  -o  --offset                     Offset address\n"
              "  -d  --header                     Bytes to change in header\n"
-             "  -n  --iana                       IANA Manufacturer Code\n"
+             "  -n  --iana                       IANA Manufacturer Code (defaults to 0x315A)\n"
              "  -i  --id                         Product ID\n"
-             "  --early_major                    Earliest compatible major version\n"
-             "  --early_minor                    Earliest compatible minor version\n"
-             "  -j  --new_major                  New major version\n"
-             "  -m  --new_minor                  New minor version\n"
+             "  --early_major                    Earliest compatible major version (defaults to 0)\n"
+             "  --early_minor                    Earliest compatible minor version (defaults to 0)\n"
+             "  -j  --new_major                  New major version (defaults to 1)\n"
+             "  -m  --new_minor                  New minor version (defaults to 0)\n"
              "  -p  --ip                         MCH IP Address\n"
-             "  -u  --username                   MCH Username\n"
-             "  -w  --password                   MCH Password\n"
+             "  -u  --username                   MCH Username (defaults to \"\")\n"
+             "  -w  --password                   MCH Password (defaults to \"\")\n"
              "  -s  --slot                       Slots to be updated (separated by comma):\n"
              "                                       [1 - 12], [all]\n"
              "  file                             Filename (including relative or absolute path)\n"
@@ -96,26 +96,39 @@ int main(int argc,char **argv) {
         early_minor
     };
 
+    /* Default values */
+    iana[0] = 0x00;
+    iana[1] = 0x31;
+    iana[2] = 0x5A;
+
+    strcpy(username, "");
+    strcpy(password, "");
+
+    earliest_major = 0;
+    earliest_min = 0;
+    new_major = 1;
+    new_minor = 0;
+
     static struct option long_options[] =
         {
             {"help",                no_argument,         NULL, 'h'},
             {"component",           required_argument,   NULL, 'c'},
             {"offset",              required_argument,   NULL, 'o'},
             {"header",              required_argument,   NULL, 'd'},
-            {"iana",                required_argument,   NULL, 'n'},
+            {"iana",                optional_argument,   NULL, 'n'},
             {"id",                  required_argument,   NULL, 'i'},
-            {"early_major",         required_argument,   NULL, early_major},
-            {"early_minor",         required_argument,   NULL, early_minor},
-            {"new_major",           required_argument,   NULL, 'j'},
-            {"new_minor",           required_argument,   NULL, 'm'},
+            {"early_major",         optional_argument,   NULL, early_major},
+            {"early_minor",         optional_argument,   NULL, early_minor},
+            {"new_major",           optional_argument,   NULL, 'j'},
+            {"new_minor",           optional_argument,   NULL, 'm'},
             {"ip",                  required_argument,   NULL, 'p'},
-            {"username",            required_argument,   NULL, 'u'},
-            {"password",            required_argument,   NULL, 'w'},
+            {"username",            optional_argument,   NULL, 'u'},
+            {"password",            optional_argument,   NULL, 'w'},
             {"slot",                required_argument,   NULL, 's'},
             {0,0,0,0}
         };
 
-    const char* shortopt = "hc:o:d:n:i:j:m:s:p:u:w:";
+    const char* shortopt = "hc:o::d::n::i:j::m::s:p:u::w::";
 
     while ((ch = getopt_long_only(argc, argv, shortopt , long_options, NULL)) != -1) {
         switch (ch) {
