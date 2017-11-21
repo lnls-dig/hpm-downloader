@@ -29,8 +29,6 @@ void print_usage (void) {
              "  -h  --help                       Display this usage information.\n"
              "  -c  --component                  Select the target component:\n"
              "                                       [0]-Bootloader [1]-IPMC [2]-Payload\n"
-             "  -o  --offset                     Offset address\n"
-             "  -d  --header                     Bytes to change in header\n"
              "  -n  --iana                       IANA Manufacturer Code (defaults to 0x315A)\n"
              "  -i  --id                         Product ID\n"
              "  --early_major                    Earliest compatible major version (defaults to 0)\n"
@@ -73,8 +71,6 @@ int main(int argc,char **argv) {
 
     /** HPM upgrade variable */
     unsigned int update_results[12] = {0};
-    unsigned int ucOffset;
-    unsigned int cntHeaderToReplace;
 
     /** General variables */
     unsigned int i;
@@ -113,8 +109,6 @@ int main(int argc,char **argv) {
         {
             {"help",                no_argument,         NULL, 'h'},
             {"component",           required_argument,   NULL, 'c'},
-            {"offset",              required_argument,   NULL, 'o'},
-            {"header",              required_argument,   NULL, 'd'},
             {"iana",                optional_argument,   NULL, 'n'},
             {"id",                  required_argument,   NULL, 'i'},
             {"early_major",         optional_argument,   NULL, early_major},
@@ -128,7 +122,7 @@ int main(int argc,char **argv) {
             {0,0,0,0}
         };
 
-    const char* shortopt = "hc:o::d::n::i:j::m::s:p:u::w::";
+    const char* shortopt = "hc:n::i:j::m::s:p:u::w::";
 
     while ((ch = getopt_long_only(argc, argv, shortopt , long_options, NULL)) != -1) {
         switch (ch) {
@@ -138,22 +132,6 @@ int main(int argc,char **argv) {
 
         case 'c':
             component = strtol(optarg, &endptr, 0);
-            break;
-
-        case 'o':
-            if(strstr(optarg,"x")){
-                sscanf(optarg, "%x", &ucOffset);
-            } else {
-                sscanf(optarg, "%d", &ucOffset);
-            }
-            break;
-
-        case 'd':
-            if(strstr(optarg,"x")){
-                sscanf(optarg, "%x", &cntHeaderToReplace);
-            } else {
-                sscanf(optarg, "%d", &cntHeaderToReplace);
-            }
             break;
 
         case 'n':
@@ -275,12 +253,13 @@ int main(int argc,char **argv) {
         return -1;
     }
 
-    //for(i=0; i<cntHeaderToReplace; i++) binary[ucOffset+i] = binary[i];
-
     /** Creation of the HPM file here */
-    hpmImg = hpm_parse(&(binary[ucOffset]), (lastAddr - (firstAddr + ucOffset)), &hpmImgSize, iana, product_id, earliest_major, earliest_min, new_major, new_minor, component);
+    hpmImg = hpm_parse(binary, (lastAddr - firstAddr), &hpmImgSize, iana, product_id, earliest_major, earliest_min, new_major, new_minor, component);
     free(binary);
-    if(hpmImg == NULL)  return -2;
+
+    if(hpmImg == NULL) {
+        return -2;
+    }
 
 #ifdef HPM_EXPORT
     /* Export HPM image to file */
