@@ -112,22 +112,22 @@ int main(int argc,char **argv) {
         {
             {"help",                no_argument,         NULL, 'h'},
             {"component",           required_argument,   NULL, 'c'},
-            {"iana",                optional_argument,   NULL, 'n'},
+            {"iana",                required_argument,   NULL, 'n'},
             {"id",                  required_argument,   NULL, 'i'},
-            {"early_major",         optional_argument,   NULL, early_major},
-            {"early_minor",         optional_argument,   NULL, early_minor},
-            {"new_major",           optional_argument,   NULL, 'j'},
-            {"new_minor",           optional_argument,   NULL, 'm'},
+            {"early_major",         required_argument,   NULL, early_major},
+            {"early_minor",         required_argument,   NULL, early_minor},
+            {"new_major",           required_argument,   NULL, 'j'},
+            {"new_minor",           required_argument,   NULL, 'm'},
             {"ip",                  required_argument,   NULL, 'p'},
-            {"username",            optional_argument,   NULL, 'u'},
-            {"password",            optional_argument,   NULL, 'w'},
+            {"username",            required_argument,   NULL, 'u'},
+            {"password",            required_argument,   NULL, 'w'},
             {"slot",                required_argument,   NULL, 's'},
             {0,0,0,0}
         };
 
-    const char* shortopt = "hc:n::i:j::m::s:p:u::w::";
+    const char* shortopt = "hc:n:i:j:m:s:p:u:w:s:";
 
-    while ((ch = getopt_long_only(argc, argv, shortopt , long_options, NULL)) != -1) {
+    while ((ch = getopt_long_only(argc, argv, shortopt, long_options, NULL)) != -1) {
         switch (ch) {
         case 'h':
             print_usage();
