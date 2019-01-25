@@ -30,7 +30,7 @@ void print_usage (void) {
              "  -c  --component                  Select the target component:\n"
              "                                       [0]-Bootloader [1]-IPMC [2]-Payload\n"
              "  -n  --iana                       IANA Manufacturer Code (defaults to 0x315A)\n"
-             "  -i  --id                         Product ID\n"
+             "  -i  --id                         Product ID (defaults to 0)\n"
              "  --early_major                    Earliest compatible major version (defaults to 0)\n"
              "  --early_minor                    Earliest compatible minor version (defaults to 0)\n"
              "  -j  --new_major                  New major version (defaults to 1)\n"
@@ -104,6 +104,9 @@ int main(int argc,char **argv) {
     earliest_min = 0;
     new_major = 1;
     new_minor = 0;
+
+    product_id[0] = 0;
+    product_id[1] = 0;
 
     static struct option long_options[] =
         {
