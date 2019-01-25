@@ -93,6 +93,8 @@ int main(int argc,char **argv) {
     };
 
     /* Default values */
+    component = 1; /* Default to IPMC firmware target */
+
     iana[0] = 0x00;
     iana[1] = 0x31;
     iana[2] = 0x5A;
