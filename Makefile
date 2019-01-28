@@ -21,7 +21,7 @@ HPMDOWNLOADER_SRC= $(wildcard $(SRC_DIR)*.c)
 HPMDOWNLOADER_OBJ=$(HPMDOWNLOADER_SRC:$(SRC_DIR)%.c=$(OBJ_DIR)%.o)
 
 #Binary
-HPMDOWNLOADER_BIN= hpmdownloader
+HPMDOWNLOADER_BIN= hpm-downloader
 
 #Rules ------------------------------------------------------------------------
 all: dirs $(HPMDOWNLOADER_OBJ) $(MTCALIB_LIB) $(HPMDOWNLOADER_BIN)
