@@ -12,6 +12,7 @@ Author: Julian Mendez <julian.mendez@cern.ch>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include <hpmParser.h>
 
