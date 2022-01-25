@@ -329,9 +329,8 @@ unsigned char hpm_upgrade(unsigned char *ip, unsigned char *username, unsigned c
     }
 
     //Upload firmware block
+    // NOTE: We're consciously performing block_nb's roll over
     for(offset=0, block_nb=0; offset < action->firmware_length; block_nb++){
-        if(block_nb == 0xFF)    block_nb=0;
-
         data[0] = 0x00;
         data[1] = block_nb;
         for(i=0; i < DATA_PER_BLOCK && offset < action->firmware_length; i++, offset++){
