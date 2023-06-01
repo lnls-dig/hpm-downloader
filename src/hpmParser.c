@@ -108,11 +108,17 @@ int header(unsigned char val[], unsigned offset, unsigned char *iana, unsigned c
 int prepare_action(unsigned char val[], int offset, unsigned int component){
 
     int i;
+    int checksum = 0;
+    
+    /*
+     * Calculates de 2's complement checksum of the header (action code, component)
+     */
+    checksum = -((0x01 + component)%256);
 
     unsigned char act[]={
         0x01,   //Upload firmware image
         component,   //Component 0
-        0xFF,   //Header checksum
+        checksum,   //Header checksum
     };
 
     for(i=0; i<sizeof(act); i++){
@@ -124,11 +130,17 @@ int prepare_action(unsigned char val[], int offset, unsigned int component){
 
 int upgrade_action(unsigned char val[], int offset, unsigned char *binary, int binsize, unsigned int component){
     int i;
-
+    int checksum = 0;
+    
+    /*
+     * Calculates de 2's complement checksum of the header (action code, component)
+     */
+    checksum = -((0x02 + component)%256);
+    
     unsigned char act[]={
         0x02,   //Upload firmware image
         component,   //Component 0
-        0xFD,   //Header checksum
+        checksum,   //Header checksum
         0x01,   //FW version
         0x0A,
         0x00,
