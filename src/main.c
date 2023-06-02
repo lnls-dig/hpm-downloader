@@ -27,6 +27,7 @@ void print_usage (void) {
     fprintf (stderr, "Formats a binary/hex file into the HPM format and sends using IPMI to the target MCH\n");
     fprintf (stderr,
              "  -h  --help                       Display this usage information.\n"
+             "  --no-retries                     Don't retry sending the same IPMI message on failure.\n"
              "  -c  --component                  Select the target component:\n"
              "                                       [0]-Bootloader [1]-IPMC [2]-Payload\n"
              "  --ignore-component-check         Ignore the check of the target component value\n"
@@ -57,6 +58,7 @@ int main(int argc,char **argv) {
     unsigned char new_minor;
     unsigned int component;
     bool check_component = true;
+    bool retries = true;
 
     unsigned char *ip = NULL; 
     unsigned char *username = ""; 
@@ -112,6 +114,7 @@ int main(int argc,char **argv) {
     static struct option long_options[] =
         {
             {"help",                no_argument,         NULL, 'h'},
+            {"no-retries",          no_argument,         NULL, 'r'},
             {"component",           required_argument,   NULL, 'c'},
             {"ignore-component-check",    no_argument,   NULL, 'k'},
             {"iana",                required_argument,   NULL, 'n'},
@@ -127,12 +130,16 @@ int main(int argc,char **argv) {
             {0,0,0,0}
         };
 
-    const char* shortopt = "hkc:n:i:j:m:p:u:w:s:";
+    const char* shortopt = "hrkc:n:i:j:m:p:u:w:s:";
 
     while ((ch = getopt_long_only(argc, argv, shortopt, long_options, NULL)) != -1) {
         switch (ch) {
         case 'h':
             print_usage();
+            break;
+
+        case 'r':
+            retries = false;
             break;
 
         case 'c':
@@ -280,7 +287,7 @@ int main(int argc,char **argv) {
     /** Download the image */
     for(i=0; i<12; i++) {
         if( slots[i] ) {
-            update_results[i] = hpmdownload(hpmImg, hpmImgSize, ip, username, password, (i+1), component, check_component);
+            update_results[i] = hpmdownload(hpmImg, hpmImgSize, ip, username, password, (i+1), component, retries, check_component);
         }
     }
 

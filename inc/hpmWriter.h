@@ -39,9 +39,9 @@ typedef struct img_info_s{
 
 unsigned char get_img_information(unsigned char *byte, unsigned int  binsize, bool check_component);
 unsigned char check_hpm_info(unsigned char *ip, unsigned char *username, unsigned char *password, unsigned char amc_slot_number);
-unsigned char hpm_upgrade(unsigned char *ip, unsigned char *username, unsigned char *password, unsigned char amc_slot_number, action_t *action, unsigned char *byte, unsigned int component);
+unsigned char hpm_upgrade(unsigned char *ip, unsigned char *username, unsigned char *password, unsigned char amc_slot_number, action_t *action, unsigned char *byte, unsigned int component, bool retries);
 unsigned char get_action(unsigned char *byte, unsigned int binsize);
-int hpmdownload(unsigned char *byte, unsigned int filesize, unsigned char *ip, unsigned char *username, unsigned char *password, unsigned char slot, unsigned int comp, bool check_component);
+int hpmdownload(unsigned char *byte, unsigned int filesize, unsigned char *ip, unsigned char *username, unsigned char *password, unsigned char slot, unsigned int comp, bool retries, bool check_component);
 unsigned char scan_upgrade_status(ipmi_intf * intf, unsigned long max_timeout);
 //function in main.c
 void set_percent(float percent);
