@@ -5,7 +5,7 @@
 
 img_info_t img_info;
 
-int hpmdownload(unsigned char *byte, unsigned int filesize, unsigned char *ip, unsigned char *username, unsigned char *password, unsigned char slot, unsigned int comp, bool check_component)
+int hpmdownload(unsigned char *byte, unsigned int filesize, unsigned char *ip, unsigned char *username, unsigned char *password, unsigned char slot, unsigned int comp, bool retries, bool check_component)
 {
     unsigned char i;
 
@@ -38,7 +38,7 @@ int hpmdownload(unsigned char *byte, unsigned int filesize, unsigned char *ip, u
 
     for(i=0; i < img_info.nb_actions; i++){
         if(img_info.actions[i].action == 0x02){
-            switch(hpm_upgrade(ip, username, password, slot, &img_info.actions[i], byte, img_info.components)){
+            switch(hpm_upgrade(ip, username, password, slot, &img_info.actions[i], byte, img_info.components, retries)){
             case 0xFF: printf("[ERROR]  {Upgrade action} \t\t Initiate upgrade action failed \n");      return -1;
             case 0xFE: printf("[ERROR]  {Upgrade action} \t\t Completion code error \n");       return -1;
             case 0xFD: printf("[ERROR]  {Upgrade action} \t\t Get upgrade status failed \n");   return -1;
@@ -285,12 +285,11 @@ unsigned char get_action(unsigned char *byte, unsigned int binsize)
 
 }
 
-unsigned char hpm_upgrade(unsigned char *ip, unsigned char *username, unsigned char *password, unsigned char amc_slot_number, action_t *action, unsigned char *byte, unsigned int component){
+unsigned char hpm_upgrade(unsigned char *ip, unsigned char *username, unsigned char *password, unsigned char amc_slot_number, action_t *action, unsigned char *byte, unsigned int component, bool retries){
     unsigned char len, i;
     unsigned int timeout;
     unsigned char ccode;
     unsigned int offset;
-    unsigned char retry;
     unsigned char scan_ret;
 
     unsigned char data[DATA_PER_BLOCK+2];
@@ -305,7 +304,6 @@ unsigned char hpm_upgrade(unsigned char *ip, unsigned char *username, unsigned c
                                               0x82,                                                             //No transit addr specified (Default: 0)
                                               7,                                                                        //No target channel specified (Default: 0)
                                               0);
-
     //Initiate upgrade action
     data[0] = 0x00;                                             //PICMG ID
     data[1] = component; //action-> components;              //Component (only one for upgrade action)
@@ -321,6 +319,11 @@ unsigned char hpm_upgrade(unsigned char *ip, unsigned char *username, unsigned c
             intf->close(intf);
             return 0xFE;
         }
+    }
+
+    // If retries is disabled, don't resend IPMI messages on failure
+    if (!retries) {
+        intf->session->retry = -1;
     }
 
     //wait - scan GET UPGRADE STATUS

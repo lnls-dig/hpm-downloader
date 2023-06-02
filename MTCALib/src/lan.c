@@ -782,6 +782,9 @@ static struct ipmi_rs * ipmi_lan_send_cmd(struct ipmi_intf * intf, struct ipmi_r
 
 		usleep(5000);
 		if (++try >= intf->session->retry) {
+			if(intf->session->retry == -1){
+				fprintf(stderr, "Retries are disabled.\n");
+			}
 			break;
 		}
 	}
