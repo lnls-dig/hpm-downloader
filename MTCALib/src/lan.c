@@ -55,7 +55,7 @@
 #include "asf.h"
 #include "auth.h"
 
-#define IPMI_LAN_TIMEOUT	2
+#define IPMI_LAN_TIMEOUT	200
 #define IPMI_LAN_RETRY		4
 #define IPMI_LAN_PORT		0x26f
 #define IPMI_LAN_CHANNEL_E	0x0e
