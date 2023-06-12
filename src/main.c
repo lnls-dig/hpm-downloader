@@ -56,9 +56,9 @@ int main(int argc,char **argv) {
     unsigned char new_minor;
     unsigned int component;
 
-    unsigned char ip[20];
-    unsigned char username[20];
-    unsigned char password[20];
+    unsigned char *ip = NULL; 
+    unsigned char *username = ""; 
+    unsigned char *password = "";
     unsigned char slots[12] = {0};
 
     /** HEX2BIN variables */
@@ -98,9 +98,6 @@ int main(int argc,char **argv) {
     iana[0] = 0x00;
     iana[1] = 0x31;
     iana[2] = 0x5A;
-
-    strcpy(username, "");
-    strcpy(password, "");
 
     earliest_major = 0;
     earliest_min = 0;
@@ -200,15 +197,15 @@ int main(int argc,char **argv) {
             break;
 
         case 'p':
-            strcpy(ip, optarg);
+            ip = optarg;
             break;
 
         case 'u':
-            strcpy(username, optarg);
+            username = optarg;
             break;
 
         case 'w':
-            strcpy(password, optarg);
+            password = optarg;
             break;
 
         case 's':
