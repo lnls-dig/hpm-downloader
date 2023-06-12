@@ -29,6 +29,7 @@ void print_usage (void) {
              "  -h  --help                       Display this usage information.\n"
              "  -c  --component                  Select the target component:\n"
              "                                       [0]-Bootloader [1]-IPMC [2]-Payload\n"
+             "  --ignore-component-check         Ignore the check of the target component value\n"
              "  -n  --iana                       IANA Manufacturer Code (defaults to 0x315A)\n"
              "  -i  --id                         Product ID (defaults to 0)\n"
              "  --early_major                    Earliest compatible major version (defaults to 0)\n"
@@ -55,6 +56,7 @@ int main(int argc,char **argv) {
     unsigned char new_major;
     unsigned char new_minor;
     unsigned int component;
+    bool check_component = true;
 
     unsigned char *ip = NULL; 
     unsigned char *username = ""; 
@@ -111,6 +113,7 @@ int main(int argc,char **argv) {
         {
             {"help",                no_argument,         NULL, 'h'},
             {"component",           required_argument,   NULL, 'c'},
+            {"ignore-component-check",    no_argument,   NULL, 'k'},
             {"iana",                required_argument,   NULL, 'n'},
             {"id",                  required_argument,   NULL, 'i'},
             {"early_major",         required_argument,   NULL, early_major},
@@ -124,7 +127,7 @@ int main(int argc,char **argv) {
             {0,0,0,0}
         };
 
-    const char* shortopt = "hc:n:i:j:m:p:u:w:s:";
+    const char* shortopt = "hkc:n:i:j:m:p:u:w:s:";
 
     while ((ch = getopt_long_only(argc, argv, shortopt, long_options, NULL)) != -1) {
         switch (ch) {
@@ -134,6 +137,10 @@ int main(int argc,char **argv) {
 
         case 'c':
             component = strtol(optarg, &endptr, 0);
+            break;
+
+        case 'k':
+            check_component = false;
             break;
 
         case 'n':
@@ -273,7 +280,7 @@ int main(int argc,char **argv) {
     /** Download the image */
     for(i=0; i<12; i++) {
         if( slots[i] ) {
-            update_results[i] = hpmdownload(hpmImg, hpmImgSize, ip, username, password, (i+1), component);
+            update_results[i] = hpmdownload(hpmImg, hpmImgSize, ip, username, password, (i+1), component, check_component);
         }
     }
 
