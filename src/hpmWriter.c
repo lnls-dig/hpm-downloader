@@ -5,13 +5,13 @@
 
 img_info_t img_info;
 
-int hpmdownload(unsigned char *byte, unsigned int filesize, unsigned char *ip, unsigned char *username, unsigned char *password, unsigned char slot, unsigned int comp)
+int hpmdownload(unsigned char *byte, unsigned int filesize, unsigned char *ip, unsigned char *username, unsigned char *password, unsigned char slot, unsigned int comp, bool check_component)
 {
     unsigned char i;
 
     printf("\n[INFO] \t {main} \t\t\t Programming MMC slot %d \n",slot);
 
-    switch(get_img_information(byte, filesize)){
+    switch(get_img_information(byte, filesize, check_component)){
     case 0xFF:  printf("[ERROR]  {get_img_information} \t\t HPM image header failed \n");       return -1;
     case 0xFE:  printf("[ERROR]  {get_img_information} \t\t HPM image format version failed \n");       return -1;
     case 0xFD:  printf("[ERROR]  {get_img_information} \t\t HPM image checksum error \n");      return -1;
@@ -54,7 +54,7 @@ int hpmdownload(unsigned char *byte, unsigned int filesize, unsigned char *ip, u
     return 0x00;
 }
 
-unsigned char get_img_information(unsigned char *byte, unsigned int binsize) {
+unsigned char get_img_information(unsigned char *byte, unsigned int binsize, bool check_component) {
 
     unsigned char i;
     unsigned char crc=0;
@@ -98,6 +98,7 @@ unsigned char get_img_information(unsigned char *byte, unsigned int binsize) {
     img_info.firware_rev[3] = byte[29];
     img_info.firware_rev[4] = byte[30];
     img_info.firware_rev[5] = byte[31];
+    img_info.check_component = check_component;
 
     img_info.oem_data_len = (unsigned short)byte[32];
     img_info.oem_data_len += ((unsigned short)byte[33]) * 256;
@@ -245,17 +246,18 @@ unsigned char get_action(unsigned char *byte, unsigned int binsize)
         }
 
         if(img_info.actions[i].action == 0x02){
-
-            switch(img_info.actions[i].components){
-            case 1:   printf("[INFO] \t {Upgrade action detected} \t Upgrade for component 0 \n"); break;
-            case 2:   printf("[INFO] \t {Upgrade action detected} \t Upgrade for component 1 \n"); break;
-            case 4:   printf("[INFO] \t {Upgrade action detected} \t Upgrade for component 2 \n"); break;
-            case 8:   printf("[INFO] \t {Upgrade action detected} \t Upgrade for component 3 \n"); break;
-            case 16:  printf("[INFO] \t {Upgrade action detected} \t Upgrade for component 4 \n"); break;
-            case 32:  printf("[INFO] \t {Upgrade action detected} \t Upgrade for component 5 \n"); break;
-            case 64:  printf("[INFO] \t {Upgrade action detected} \t Upgrade for component 6 \n"); break;
-            case 128: printf("[INFO] \t {Upgrade action detected} \t Upgrade for component 7 \n"); break;
-            default:  printf("[INFO] \t {Upgrade action} \t\t Components value : 0x%02x \n", img_info.actions[i].components); return 0xFB;
+            if(img_info.check_component){
+                switch(img_info.actions[i].components){
+                case 1:   printf("[INFO] \t {Upgrade action detected} \t Upgrade for component 0 \n"); break;
+                case 2:   printf("[INFO] \t {Upgrade action detected} \t Upgrade for component 1 \n"); break;
+                case 4:   printf("[INFO] \t {Upgrade action detected} \t Upgrade for component 2 \n"); break;
+                case 8:   printf("[INFO] \t {Upgrade action detected} \t Upgrade for component 3 \n"); break;
+                case 16:  printf("[INFO] \t {Upgrade action detected} \t Upgrade for component 4 \n"); break;
+                case 32:  printf("[INFO] \t {Upgrade action detected} \t Upgrade for component 5 \n"); break;
+                case 64:  printf("[INFO] \t {Upgrade action detected} \t Upgrade for component 6 \n"); break;
+                case 128: printf("[INFO] \t {Upgrade action detected} \t Upgrade for component 7 \n"); break;
+                default:  printf("[INFO] \t {Upgrade action} \t\t Components value : 0x%02x \n", img_info.actions[i].components); return 0xFB;
+                }
             }
 
             printf("[INFO] \t {Upgrade action detected} \t Upgrade to version %d.%d \n",byte[offset++], byte[offset++]);
