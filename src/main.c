@@ -127,7 +127,7 @@ int main(int argc,char **argv) {
             {0,0,0,0}
         };
 
-    const char* shortopt = "hc:n:i:j:m:s:p:u:w:s:";
+    const char* shortopt = "hc:n:i:j:m:p:u:w:s:";
 
     while ((ch = getopt_long_only(argc, argv, shortopt, long_options, NULL)) != -1) {
         switch (ch) {
