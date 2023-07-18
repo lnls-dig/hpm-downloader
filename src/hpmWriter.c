@@ -1,6 +1,5 @@
 #include <mtca.h>
 #include <unistd.h>
-
 #include <hpmWriter.h>
 
 img_info_t img_info;
@@ -372,7 +371,7 @@ unsigned char hpm_upgrade(unsigned char *ip, unsigned char *username, unsigned c
         return 0xF9;
     }
 
-    if(rsp->ccode != 0x00 && rsp->ccode != 0x81){ //Ignore size error for now
+    if(rsp->ccode != 0x00){ //Ignore size error for now
         printf("[INFO] \t {FINISH_FIRMWARE_UPLOAD} \t Completion Code : 0x%02x \n", rsp->ccode);
         intf->close(intf);
         return 0xF8;

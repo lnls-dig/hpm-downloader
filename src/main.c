@@ -60,8 +60,8 @@ int main(int argc,char **argv) {
     bool check_component = true;
     bool retries = true;
 
-    unsigned char *ip = NULL; 
-    unsigned char *username = ""; 
+    unsigned char *ip = NULL;
+    unsigned char *username = "";
     unsigned char *password = "";
     unsigned char slots[12] = {0};
 
@@ -290,13 +290,14 @@ int main(int argc,char **argv) {
             update_results[i] = hpmdownload(hpmImg, hpmImgSize, ip, username, password, (i+1), component, retries, check_component);
         }
     }
-
+    int ret = 0;
     /** Print results */
     for(i=0; i < 12; i++){
         if(slots[i] && update_results[i]){
             printf(RED "AMC slot %d : Programming failed \n" RESET, i+1);
+            ret = 1;
         }
     }
 
-    return 0;
+    return ret;
 }
